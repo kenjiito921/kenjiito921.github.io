@@ -121,19 +121,20 @@
   let userIdentifier = "Anonymous";
   let isGuestMode = false;
 
-  async function callApi(data) {
+async function callApi(data) {
     try {
-      if (data.action !== "upload") {
-        const queryString = '?data=' + encodeURIComponent(JSON.stringify(data));
-        const response = await fetch(GAS_URL + queryString, { method: 'GET', redirect: 'follow' });
-        return await response.json();
-      } else {
-        const formData = new URLSearchParams(); formData.append('data', JSON.stringify(data));
-        const response = await fetch(GAS_URL, { method: 'POST', body: formData, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'follow' });
-        return await response.json();
-      }
+      const formData = new URLSearchParams();
+      formData.append('data', JSON.stringify(data));
+      const response = await fetch(GAS_URL, { 
+        method: 'POST', 
+        body: formData, 
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+        redirect: 'follow' 
+      });
+      return await response.json();
     } catch (e) {
-      document.getElementById('notification').innerText = "通信エラー発生"; return { success: false };
+      document.getElementById('notification').innerText = "通信エラー発生"; 
+      return { success: false };
     }
   }
 
