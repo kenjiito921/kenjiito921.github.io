@@ -114,7 +114,7 @@
 </div>
 
 <script>
-  // ★設定：新しいGASのURL
+  // ★設定：新しいGASのURLを貼り付け
   const GAS_URL = "https://script.google.com/macros/s/AKfycbxDY4wS367_yPavGliWNITlAe-3v3RqTwwFPnHpcDXOPk47Me2XGhWoq3Zpf-CzfByz2w/exec";
 
   let currentMode = "1";
@@ -188,11 +188,9 @@
         container.innerHTML = html;
       }
     }
-    // 最初のサジェスト生成（やり取りがない状態）
     generateSuggestions(null, null);
   }
 
-  // ★変更：直前の質問と回答を受け取ってネクスト質問を生成
   async function generateSuggestions(lastQ, lastA) {
     const container = document.getElementById('suggestion-container');
     const btnArea = document.getElementById('suggestion-buttons');
@@ -209,7 +207,7 @@
         btn.onclick = () => sendSuggestion(text);
         btnArea.appendChild(btn);
       });
-      document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight; // スクロール調整
+      document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
     } else {
       container.style.display = 'none';
     }
@@ -261,10 +259,7 @@
     if (res && res.success) {
       log.innerHTML += "<div class='ai-msg'>AI: " + res.answer.replace(/\n/g, '<br>') + "</div>";
       document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-      
-      // ★新規追加：回答が得られたら、そのやり取りを元に次の質問を自動生成
       generateSuggestions(query, res.answer);
-      
     } else {
       log.innerHTML += "<div class='ai-msg' style='color:red;'>AI: エラーが発生しました。</div>";
     }
