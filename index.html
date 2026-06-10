@@ -73,8 +73,12 @@
   <h2 id="auth-title">ログインが必要です</h2>
   <div id="mode2-inputs" style="display:none;"><input type="password" id="common-pass" placeholder="共通パスワードを入力..."></div>
   <div id="mode4-inputs" style="display:none;">
-    <p style="font-size:12px; color:gray; margin:0;">※初回アクセス時は入力値で自動登録</p>
-    <input type="text" id="user-id" placeholder="ユーザーID（自由）">
+    <p style="font-size:12px; color:gray; margin:0 0 5px 0;">※初回アクセス時は入力値で自動登録されます</p>
+    <div style="background-color: #e2e3e5; color: #383d41; padding: 10px; border-radius: 4px; font-size: 11px; text-align: left; margin-bottom: 12px; line-height: 1.5;">
+      <strong>【ご登録情報の取り扱いについて】</strong><br>
+      ご登録いただくメールアドレスは、本サービスの利用（ログイン認証）に限る目的でのみ使用いたします。
+    </div>
+    <input type="email" id="user-id" placeholder="メールアドレス（ID）">
     <input type="password" id="user-pass" placeholder="パスワード（自由）">
   </div>
   <button onclick="submitAuth()">認証する</button>
@@ -115,13 +119,13 @@
 
 <script>
   // ★設定：新しいGASのURLを貼り付け
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec";
+  const GAS_URL = "[https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec](https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec)";
 
   let currentMode = "1";
   let userIdentifier = "Anonymous";
   let isGuestMode = false;
 
-async function callApi(data) {
+  async function callApi(data) {
     try {
       const formData = new URLSearchParams();
       formData.append('data', JSON.stringify(data));
@@ -167,7 +171,15 @@ async function callApi(data) {
       const res = await callApi({ action: "checkCommonPassword", password: document.getElementById('common-pass').value });
       if (res && res.success) { userIdentifier = "Common_" + getBrowserId(); showMainInterface(); } else err.innerText = "パスワードが違います";
     } else if (currentMode === "4") {
-      const uid = document.getElementById('user-id').value, pwd = document.getElementById('user-pass').value;
+      const uid = document.getElementById('user-id').value.trim();
+      const pwd = document.getElementById('user-pass').value;
+      
+      // メールアドレス形式の簡易チェック
+      if (!uid || !uid.includes('@')) {
+        err.innerText = "有効なメールアドレスを入力してください";
+        return;
+      }
+      
       const res = await callApi({ action: "loginOrCreateUser", userId: uid, password: pwd });
       if (res.success) { userIdentifier = uid; showMainInterface(); if(res.isNew) alert("新規登録・ログインしました"); } else err.innerText = res.message;
     }
