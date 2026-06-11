@@ -218,22 +218,35 @@ async function checkGuestModeAndInit() {
     else if (currentMode === "4") { document.getElementById('auth-screen').style.display = 'block'; document.getElementById('mode4-inputs').style.display = 'block'; }
   }
 
-  async function submitAuth() {
-    const err = document.getElementById('auth-error-msg'); err.innerText = "";
+async function submitAuth() {
+    const err = document.getElementById('auth-error-msg'); err.innerHTML = ""; 
     if (currentMode === "2") {
       const res = await callApi({ action: "checkCommonPassword", password: document.getElementById('common-pass').value });
-      if (res && res.success) { userIdentifier = "Common_" + getBrowserId(); showMainInterface(); } else err.innerText = "パスワードが違います";
+      if (res && res.success) { userIdentifier = "Common_" + getBrowserId(); showMainInterface(); } else err.innerHTML = "パスワードが違います"; 
     } else if (currentMode === "4") {
       const uid = document.getElementById('user-id').value.trim();
       const pwd = document.getElementById('user-pass').value;
       
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(uid)) { err.innerText = "有効なメールアドレスを入力してください（例: name@example.com）"; return; }
-      const res = await callApi({ action: "loginOrCreateUser", userId: uid, password: pwd });
-      if (res.success) { userIdentifier = uid; showMainInterface(); if(res.isNew) alert("新規登録・ログインしました"); } else err.innerText = res.message;
+      if (!emailRegex.test(uid)) { err.innerHTML = "有効なメールアドレスを入力してください（例: name@example.com）"; return; }
+      
+      // ★追加：ゲストモード(false)の逆、つまり管理モードかどうかを判定
+      const isManageMode = !isGuestMode;
+      
+      // ★変更：GASに「manage: isManageMode」を一緒に送る
+      const res = await callApi({ action: "loginOrCreateUser", userId: uid, password: pwd, manage: isManageMode });
+      if (res.success) { 
+        userIdentifier = uid; showMainInterface(); 
+        // 管理者モードのときはアラートの文言を変える（お好みで）
+        if(res.isNew) {
+          if (isManageMode) alert("管理用として新規登録・ログインしました。");
+          else alert("新規登録・ログインしました。本日に限り無料でご利用いただけます。"); 
+        }
+      } else {
+        err.innerHTML = res.message; 
+      }
     }
   }
-
   function showMainInterface() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-interface').style.display = 'flex';
