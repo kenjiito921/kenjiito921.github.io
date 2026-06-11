@@ -181,12 +181,22 @@
     return id;
   }
 
-  async function checkGuestModeAndInit() {
+async function checkGuestModeAndInit() {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('guest') === 'true' || urlParams.get('guest') === 'true/') { isGuestMode = true; document.getElementById('sidebar').style.display = 'none'; }
+    
+    // URLに ?manage=true がついている場合のみ、管理用（サイドバーあり）にする
+    if (urlParams.get('manage') === 'true' || urlParams.get('manage') === 'true/') { 
+      isGuestMode = false; 
+      // 管理モードなのでサイドバーはそのまま表示
+    } else {
+      // それ以外（パラメータなし等）はすべてゲスト用（サイドバーなし）にする
+      isGuestMode = true;
+      document.getElementById('sidebar').style.display = 'none'; 
+    }
+    
     initializeConfig();
   }
-
+  
   async function initializeConfig() {
     const config = await callApi({ action: "getConfig" });
     
