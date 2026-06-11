@@ -230,23 +230,29 @@ async function submitAuth() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(uid)) { err.innerHTML = "有効なメールアドレスを入力してください（例: name@example.com）"; return; }
       
-      // ★追加：ゲストモード(false)の逆、つまり管理モードかどうかを判定
       const isManageMode = !isGuestMode;
       
-      // ★変更：GASに「manage: isManageMode」を一緒に送る
+      // GASにログイン情報を送信
       const res = await callApi({ action: "loginOrCreateUser", userId: uid, password: pwd, manage: isManageMode });
+      
       if (res.success) { 
-        userIdentifier = uid; showMainInterface(); 
-        // 管理者モードのときはアラートの文言を変える（お好みで）
+        userIdentifier = uid; 
+        
+        // ★修正ポイント：通信（メイン画面描画）の「前」にアラートを出し、OKを押すまで待機させる★
         if(res.isNew) {
           if (isManageMode) alert("管理用として新規登録・ログインしました。");
           else alert("新規登録・ログインしました。本日に限り無料でご利用いただけます。"); 
         }
+        
+        // アラートの「OK」が押された後に、画面を切り替えてサジェストの読み込みを開始する
+        showMainInterface(); 
+
       } else {
         err.innerHTML = res.message; 
       }
     }
   }
+  
   function showMainInterface() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-interface').style.display = 'flex';
