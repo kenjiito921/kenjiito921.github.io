@@ -17,7 +17,7 @@
     #sidebar { width: 300px; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; height: 100%; }
     #main { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; overflow: hidden; }
     
-    /* ヘッダー周りのデザイン変更 */
+    /* ヘッダー周りのデザイン */
     #header-container { display: flex; flex-shrink: 0; padding-top: env(safe-area-inset-top); background: #fff3cd; border-bottom: 1px solid #c3e6cb; z-index: 10; height: 65px;}
     #app-logo { width: 80px; height: 100%; object-fit: contain; background: white; flex-shrink: 0; }
     #header-center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -151,7 +151,7 @@
 </div>
 
 <script>
-  // ★設定：新しいGASのURLを貼り付け
+  // ★重要：ここに必ずご自身の GAS URL（.../exec で終わるもの）を貼り付けてください！★
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec";
   
   let currentMode = "1";
@@ -189,7 +189,17 @@
 
   async function initializeConfig() {
     const config = await callApi({ action: "getConfig" });
-    if (!config || !config.authMode) return;
+    
+    // 【真っ白回避】GASと通信できない場合はエラー画面を表示
+    if (!config || !config.authMode) {
+      document.getElementById('auth-screen').style.display = 'block';
+      document.getElementById('auth-title').innerHTML = "⚠️ 通信エラーが発生しました";
+      document.getElementById('auth-title').style.color = "red";
+      document.getElementById('auth-error-msg').innerHTML = "GASのURLが設定されていないか、デプロイが正しく更新されていません。<br>index.html の GAS_URL を確認してください。";
+      document.getElementById('mode4-inputs').style.display = 'none';
+      return;
+    }
+
     currentMode = config.authMode;
     document.getElementById('info-banner').innerText = config.info;
     
@@ -220,10 +230,9 @@
     loadFiles();
   }
 
-  // ★今回追加：アンケートポップアップの開閉と送信処理★
+  // アンケートポップアップの開閉
   function openSurveyModal() {
     document.getElementById('survey-modal').style.display = 'flex';
-    // リンクをクリックしたという記録をログに残す
     callApi({ action: "logEvent", eventName: "継続利用リンククリック", identifier: userIdentifier });
   }
   
@@ -231,6 +240,7 @@
     document.getElementById('survey-modal').style.display = 'none';
   }
 
+  // 【画面遷移修正版】アンケート送信＆Stripeリダイレクト
   async function submitSurveyAndPay() {
     const btn = document.querySelector('.btn-submit');
     btn.innerText = "送信中...";
@@ -259,8 +269,9 @@
     btn.disabled = false;
     closeSurveyModal();
 
-    // Stripe決済画面へメールアドレスを引き継いで自動ジャンプ
+    // ★Stripe決済画面へメールアドレスを引き継いで自動ジャンプ★
     const stripeUrl = "https://buy.stripe.com/fZu28k8Py3nHdSx8761RC00?prefilled_email=" + encodeURIComponent(userIdentifier);
+    window.location.assign(stripeUrl); 
   }
 
   async function loadFiles() {
