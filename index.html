@@ -121,6 +121,11 @@
       <input type="text" id="doc-url" placeholder="URL...">
       <button onclick="addGoogleDoc()">追加</button>
     </div>
+
+    <div style="text-align: center; margin-bottom: 10px;">
+      <a href="#" id="portal-link" target="_blank" style="font-size: 12px; color: #6c757d; text-decoration: underline;">プランの確認・解約はこちら</a>
+    </div>
+        
     <div style="padding: 10px; font-weight: bold; font-size: 14px; background: #f8f9fa;">管理中のファイル</div>
     <div id="file-list-container"><div id="file-list">読み込み中...</div></div>
   </div>
@@ -253,12 +258,20 @@ async function submitAuth() {
     }
   }
   
-  function showMainInterface() {
+function showMainInterface() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-interface').style.display = 'flex';
+    
+    // ★追加：Stripeカスタマーポータルのリンクにメールアドレスを引き継ぐ
+    const portalUrl = "https://billing.stripe.com/p/login/fZu28k8Py3nHdSx8761RC00";
+    const portalLink = document.getElementById('portal-link');
+    if (portalLink && portalUrl.startsWith('http')) {
+      portalLink.href = portalUrl + "?prefilled_email=" + encodeURIComponent(userIdentifier);
+    }
+    
     loadFiles();
   }
-
+  
   // アンケートポップアップの開閉
   function openSurveyModal() {
     document.getElementById('survey-modal').style.display = 'flex';
