@@ -260,8 +260,7 @@
     closeSurveyModal();
 
     // Stripe決済画面へメールアドレスを引き継いで自動ジャンプ
-    const stripeUrl = "[https://buy.stripe.com/fZu28k8Py3nHdSx8761RC00?prefilled_email=](https://buy.stripe.com/fZu28k8Py3nHdSx8761RC00?prefilled_email=)" + encodeURIComponent(userIdentifier);
-    window.location.href = stripeUrl; 
+    const stripeUrl = "https://buy.stripe.com/fZu28k8Py3nHdSx8761RC00?prefilled_email=" + encodeURIComponent(userIdentifier);
   }
 
   async function loadFiles() {
