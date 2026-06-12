@@ -112,12 +112,19 @@
 </div>
 
 <script>
-  // ★設定1：新しいGASのURLを貼り付け
+
+　// ★設定1：新しいGASのURLを貼り付け
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec";
   
-  // ★設定2：新しく指定された価格用のGoogleフォームURL（ベース）
-  const GOOGLE_FORM_BASE_URL = "[https://docs.google.com/forms/d/e/1FAIpQLScf21bS65pLfvxz9QpKf463SrMcj0IHIrvZaH5u_Tum69ewpg/viewform?usp=pp_url&entry.1290544659=](https://docs.google.com/forms/d/e/1FAIpQLScf21bS65pLfvxz9QpKf463SrMcj0IHIrvZaH5u_Tum69ewpg/viewform?usp=pp_url&entry.1290544659=)";
-
+  // ★設定2：自動変換バグを完全に回避する結合記述に修正★
+  const formParts = [
+    "ht", "tps", "://", 
+    "docs.google.com/forms/d/e/", 
+    "1FAIpQLScf21bS65pLfvxz9QpKf463SrMcj0IHIrvZaH5u_Tum69ewpg", 
+    "/viewform?usp=pp_url&entry.1290544659="
+  ];
+  const GOOGLE_FORM_BASE_URL = formParts.join("");
+  
   let currentMode = "1";
   let userIdentifier = "Anonymous";
   let isGuestMode = false;
