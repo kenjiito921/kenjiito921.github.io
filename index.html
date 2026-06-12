@@ -112,7 +112,7 @@
   // ★設定1：ご自身の現在の最新のGAS URLをここに貼り付けてください★
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec";
   
-  // 安全な分割結合方式に修正（AIの自動リンクバグを完全に回避）
+  // 安全な分割結合方式（AIの自動リンクバグを完全に回避し、新URLを正確に復元）
   function getCleanFormBaseUrl() {
     const urlParts = [
       "ht", "tps", "://", 
