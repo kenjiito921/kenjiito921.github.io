@@ -17,7 +17,7 @@
     #sidebar { width: 300px; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; height: 100%; }
     #main { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; overflow: hidden; }
     
-    /* ヘッダー周りのデザイン（ロゴ表示崩れ・白化の完全対策） */
+    /* ヘッダー周りのデザイン */
     #header-container { display: flex; flex-shrink: 0; background: #fff3cd; border-bottom: 1px solid #c3e6cb; z-index: 10; height: 65px; width: 100%; box-sizing: border-box; align-items: center; }
     #app-logo-box { width: 80px; height: 65px; background: #007bff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-right: 1px solid #c3e6cb; color: white; font-weight: bold; font-size: 14px; text-align: center; line-height: 1.2; }
     
@@ -112,17 +112,18 @@
   // ★設定1：ご自身の現在の最新のGAS URLをここに貼り付けてください★
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyLSOkIX95ZW-BXjwyEefTx3CbT14VaW5GyHfYep-w1W5Byrs1Y6Hz2RDmAXuL5uHZU5A/exec";
   
-  // ★設定2：自動変換バグを完璧に阻止するため、フォームURLを暗号化（16進数コード化）して配置
-  const HEX_FORM_URL = "68747470733a2f2f646f63732e676f6f676c652e636f6d2f666f726d732f642f652f3146414970514c536366323162533635704c6676787a3951704b6634363353724d636a30494849725a4835755f54756d3639657770672f76696577666f726d3f7573703d70705f75726c26656e74727a2e313239303534343635393d";
-  
-  // 16進数から通常のURL文字列に復元する安全な関数
+  // 安全な分割結合方式に修正（AIの自動リンクバグを完全に回避）
   function getCleanFormBaseUrl() {
-    let hex = HEX_FORM_URL.replace("entryz", "entry");
-    let str = "";
-    for (let i = 0; i < hex.length; i += 2) {
-      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-    }
-    return str;
+    const urlParts = [
+      "ht", "tps", "://", 
+      "docs.google.com", 
+      "/forms/d/e/", 
+      "1FAIpQLScf21bS65pLfvxz9QpKf463SrMcj0IHIrvZaH5u_Tum69ewpg", 
+      "/viewform", 
+      "?usp=pp_url", 
+      "&entry.1290544659="
+    ];
+    return urlParts.join("");
   }
 
   let currentMode = "1";
@@ -207,7 +208,6 @@
         showMainInterface(); 
       } else {
         if (res.message === "期限切れ" || res.message.indexOf("無料体験期間") !== -1) {
-          // 復元した綺麗なURLにメールアドレスを結合
           const customFormUrl = getCleanFormBaseUrl() + encodeURIComponent(uid);
           err.innerHTML = "ご利用できません。<br><br><a href='" + customFormUrl + "' target='_blank' style='display:inline-block; padding:10px 15px; background:#007bff; color:white; text-decoration:none; border-radius:4px; font-weight:bold;'>ご利用をご希望する人はこちら</a>";
         } else {
