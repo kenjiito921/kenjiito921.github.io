@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini活用能力 業種別ベンチマーク分析ダッシュボード</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+        <h1 class="text-lg font-bold text-slate-900 tracking-tight">Gemini 活用能力ベンチマーク分析</h1>
+      </div>
+      <div class="flex items-center space-x-4 text-sm">
+        <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-medium border border-emerald-200">
+          Anonymous Mode
+        </span>
+        <span class="text-slate-500" id="userAnonId">ID: anon-8f3a9e</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">業種別ベンチマーク比較設定</h2>
+          <p class="text-sm text-slate-500">比較対象とする国内業種を選択してください（データは統計集計値）</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <label for="industrySelect" class="text-sm font-medium text-slate-700">比較業種:</label>
+          <select id="industrySelect" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="IT・通信">IT・通信</option>
+            <option value="コンサルティング・専門サービス" selected>コンサルティング・専門サービス</option>
+            <option value="金融・保険">金融・保険</option>
+            <option value="製造業">製造業</option>
+            <option value="小売・流通">小売・流通</option>
+            <option value="医療・ヘルスケア">医療・ヘルスケア</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">総合スコア</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold text-blue-600" id="myTotalScore">81.4</span>
+          <span class="text-sm text-slate-500">/ 100点</span>
+        </div>
+        <div class="mt-2 text-xs text-slate-500">直近分析プロンプト数: <span id="promptCount">14</span> 件</div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">選択業種平均との差</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold text-emerald-600" id="diffIndustryScore">+5.4</span>
+          <span class="text-sm text-slate-500">pt</span>
+        </div>
+        <div class="mt-2 text-xs text-slate-500">業種平均: <span id="industryAvgScore">76.0</span> 点</div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">国内全業種平均との差</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold text-emerald-600" id="diffNationalScore">+13.7</span>
+          <span class="text-sm text-slate-500">pt</span>
+        </div>
+        <div class="mt-2 text-xs text-slate-500">全国平均: <span id="nationalAvgScore">67.7</span> 点</div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">業界内推定パーセンタイル</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold text-indigo-600" id="percentileRank">上位 12%</span>
+        </div>
+        <div class="mt-2 text-xs text-slate-500">推定偏差値: <span id="deviationValue">61.8</span></div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-slate-900 text-sm">5軸スキルバランス (レーダー比較)</h3>
+          <span class="text-xs text-slate-400">各軸20点満点</span>
+        </div>
+        <div class="relative flex-1 min-h-[320px]">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-slate-900 text-sm">国内業種別ベンチマーク比較</h3>
+          <span class="text-xs text-slate-400">平均スコア (100点満点)</span>
+        </div>
+        <div class="relative flex-1 min-h-[320px]">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div class="mb-4">
+        <h3 class="font-bold text-slate-900 text-base">プロンプト自動採点・ログシミュレーター</h3>
+        <p class="text-sm text-slate-500">Geminiに送信したプロンプトを入力して「スコア分析」を押すと、リアルタイムに5軸採点され全体のグラフへ反映されます。</p>
+      </div>
+
+      <div class="space-y-4">
+        <textarea id="promptInput" rows="3" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="例: 20代向け新サービスの企画書を作成してください。前提として予算は500万円以内、形式はmarkdownの箇条書きで、各ステップに懸念点と対応策を含めてください。"></textarea>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-slate-400">個人情報は自動的にマスキングされて安全に処理されます</div>
+          <button id="btnAnalyze" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm">
+            プロンプトを分析・追加
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-5 gap-3 text-center">
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="text-xs text-slate-500">文脈・前提付与</div>
+          <div class="text-lg font-bold text-slate-800 mt-1" id="scoreContext">17.5</div>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="text-xs text-slate-500">指示具体性・制約</div>
+          <div class="text-lg font-bold text-slate-800 mt-1" id="scoreSpecificity">18.0</div>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="text-xs text-slate-500">タスク分解・構造</div>
+          <div class="text-lg font-bold text-slate-800 mt-1" id="scoreDecomposition">16.5</div>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="text-xs text-slate-500">対話・反復改善</div>
+          <div class="text-lg font-bold text-slate-800 mt-1" id="scoreIteration">15.0</div>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="text-xs text-slate-500">精度・検証意識</div>
+          <div class="text-lg font-bold text-slate-800 mt-1" id="scoreVerification">14.4</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center py-6 text-xs text-slate-400 border-t border-slate-200">
+    Gemini Utilization Competency Benchmark &copy; 2026 Anonymous Analytics
+  </footer>
+
+  <script>
+    const INDUSTRY_BENCHMARKS = {
+      "IT・通信": { total: 72.5, context: 15.2, specificity: 16.1, decomposition: 14.8, iteration: 13.5, verification: 12.9 },
+      "コンサルティング・専門サービス": { total: 76.0, context: 16.5, specificity: 16.8, decomposition: 15.9, iteration: 14.0, verification: 12.8 },
+      "金融・保険": { total: 68.2, context: 14.8, specificity: 15.0, decomposition: 13.2, iteration: 12.1, verification: 13.1 },
+      "製造業": { total: 64.0, context: 13.5, specificity: 14.2, decomposition: 12.8, iteration: 11.5, verification: 12.0 },
+      "小売・流通": { total: 59.8, context: 12.0, specificity: 13.5, decomposition: 11.8, iteration: 11.2, verification: 11.3 },
+      "医療・ヘルスケア": { total: 65.5, context: 14.1, specificity: 14.5, decomposition: 12.9, iteration: 11.8, verification: 12.2 }
+    };
+
+    const NATIONAL_AVG = {
+      total: 67.7, context: 14.35, specificity: 15.02, decomposition: 13.57, iteration: 12.35, verification: 12.38
+    };
+
+    let userStats = {
+      count: 14,
+      context: 17.5,
+      specificity: 18.0,
+      decomposition: 16.5,
+      iteration: 15.0,
+      verification: 14.4
+    };
+
+    function calculateTotal(stats) {
+      return (stats.context + stats.specificity + stats.decomposition + stats.iteration + stats.verification);
+    }
+
+    let radarChart, barChart;
+
+    function initCharts() {
+      const radarCtx = document.getElementById("radarChart").getContext("2d");
+      radarChart = new Chart(radarCtx, {
+        type: "radar",
+        data: {
+          labels: ["文脈・前提付与", "指示具体性・制約", "タスク分解・構造", "対話・反復改善", "精度・検証意識"],
+          datasets: [
+            {
+              label: "あなた (Anonymous)",
+              data: [userStats.context, userStats.specificity, userStats.decomposition, userStats.iteration, userStats.verification],
+              backgroundColor: "rgba(37, 99, 235, 0.2)",
+              borderColor: "rgba(37, 99, 235, 1)",
+              borderWidth: 2,
+              pointBackgroundColor: "rgba(37, 99, 235, 1)"
+            },
+            {
+              label: "選択業種平均",
+              data: [16.5, 16.8, 15.9, 14.0, 12.8],
+              backgroundColor: "rgba(16, 185, 129, 0.15)",
+              borderColor: "rgba(16, 185, 129, 1)",
+              borderWidth: 2,
+              pointBackgroundColor: "rgba(16, 185, 129, 1)"
+            },
+            {
+              label: "国内全業種平均",
+              data: [NATIONAL_AVG.context, NATIONAL_AVG.specificity, NATIONAL_AVG.decomposition, NATIONAL_AVG.iteration, NATIONAL_AVG.verification],
+              backgroundColor: "rgba(148, 163, 184, 0.1)",
+              borderColor: "rgba(148, 163, 184, 0.8)",
+              borderWidth: 1.5,
+              borderDash: [4, 4],
+              pointBackgroundColor: "rgba(148, 163, 184, 1)"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              min: 0,
+              max: 20,
+              ticks: { stepSize: 5 }
+            }
+          }
+        }
+      });
+
+      const barCtx = document.getElementById("barChart").getContext("2d");
+      const industries = Object.keys(INDUSTRY_BENCHMARKS);
+      const industryScores = industries.map(ind => INDUSTRY_BENCHMARKS[ind].total);
+
+      barChart = new Chart(barCtx, {
+        type: "bar",
+        data: {
+          labels: ["あなた", ...industries],
+          datasets: [{
+            label: "総合スコア",
+            data: [calculateTotal(userStats), ...industryScores],
+            backgroundColor: [
+              "rgba(37, 99, 235, 0.85)",
+              "rgba(100, 116, 139, 0.65)",
+              "rgba(16, 185, 129, 0.85)",
+              "rgba(100, 116, 139, 0.65)",
+              "rgba(100, 116, 139, 0.65)",
+              "rgba(100, 116, 139, 0.65)",
+              "rgba(100, 116, 139, 0.65)"
+            ],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 40,
+              max: 100,
+              ticks: { stepSize: 10 }
+            }
+          }
+        }
+      });
+    }
+
+    function updateDashboard() {
+      const selectedInd = document.getElementById("industrySelect").value;
+      const targetBench = INDUSTRY_BENCHMARKS[selectedInd];
+      const myTotal = calculateTotal(userStats);
+
+      document.getElementById("myTotalScore").textContent = myTotal.toFixed(1);
+      document.getElementById("promptCount").textContent = userStats.count;
+      document.getElementById("industryAvgScore").textContent = targetBench.total.toFixed(1);
+      document.getElementById("nationalAvgScore").textContent = NATIONAL_AVG.total.toFixed(1);
+
+      const diffInd = myTotal - targetBench.total;
+      const diffNat = myTotal - NATIONAL_AVG.total;
+
+      const diffIndEl = document.getElementById("diffIndustryScore");
+      diffIndEl.textContent = (diffInd >= 0 ? "+" : "") + diffInd.toFixed(1);
+      diffIndEl.className = diffInd >= 0 ? "text-3xl font-extrabold text-emerald-600" : "text-3xl font-extrabold text-rose-600";
+
+      const diffNatEl = document.getElementById("diffNationalScore");
+      diffNatEl.textContent = (diffNat >= 0 ? "+" : "") + diffNat.toFixed(1);
+      diffNatEl.className = diffNat >= 0 ? "text-3xl font-extrabold text-emerald-600" : "text-3xl font-extrabold text-rose-600";
+
+      document.getElementById("scoreContext").textContent = userStats.context.toFixed(1);
+      document.getElementById("scoreSpecificity").textContent = userStats.specificity.toFixed(1);
+      document.getElementById("scoreDecomposition").textContent = userStats.decomposition.toFixed(1);
+      document.getElementById("scoreIteration").textContent = userStats.iteration.toFixed(1);
+      document.getElementById("scoreVerification").textContent = userStats.verification.toFixed(1);
+
+      radarChart.data.datasets[0].data = [
+        userStats.context, userStats.specificity, userStats.decomposition, userStats.iteration, userStats.verification
+      ];
+      radarChart.data.datasets[1].label = `${selectedInd} 平均`;
+      radarChart.data.datasets[1].data = [
+        targetBench.context, targetBench.specificity, targetBench.decomposition, targetBench.iteration, targetBench.verification
+      ];
+      radarChart.update();
+
+      const industries = Object.keys(INDUSTRY_BENCHMARKS);
+      const bgColors = ["rgba(37, 99, 235, 0.85)"];
+      industries.forEach(ind => {
+        bgColors.push(ind === selectedInd ? "rgba(16, 185, 129, 0.85)" : "rgba(100, 116, 139, 0.65)");
+      });
+
+      barChart.data.datasets[0].data = [myTotal, ...industries.map(ind => INDUSTRY_BENCHMARKS[ind].total)];
+      barChart.data.datasets[0].backgroundColor = bgColors;
+      barChart.update();
+    }
+
+    function evaluatePrompt(text) {
+      const cKw = ["前提", "背景", "目的", "ターゲット", "役割", "ペルソナ", "として"];
+      const sKw = ["形式", "表", "箇条書き", "フォーマット", "ステップ", "以内", "json", "markdown"];
+      const dKw = ["1.", "2.", "手順", "まず", "次に", "条件", "構成", "分解"];
+      const vKw = ["理由", "根拠", "出典", "比較", "メリット", "デメリット", "検証", "懸念"];
+
+      return {
+        context: Math.min(20, cKw.reduce((acc, k) => acc + (text.includes(k) ? 4 : 0), 0) + (text.length > 80 ? 4 : 2)),
+        specificity: Math.min(20, sKw.reduce((acc, k) => acc + (text.includes(k) ? 4 : 0), 0) + 4),
+        decomposition: Math.min(20, dKw.reduce((acc, k) => acc + (text.includes(k) ? 4 : 0), 0) + 4),
+        iteration: 15,
+        verification: Math.min(20, vKw.reduce((acc, k) => acc + (text.includes(k) ? 4 : 0), 0) + 2)
+      };
+    }
+
+    document.getElementById("industrySelect").addEventListener("change", updateDashboard);
+
+    document.getElementById("btnAnalyze").addEventListener("click", () => {
+      const input = document.getElementById("promptInput").value.trim();
+      if (!input) return;
+
+      const newScores = evaluatePrompt(input);
+      const n = userStats.count;
+      userStats.context = (userStats.context * n + newScores.context) / (n + 1);
+      userStats.specificity = (userStats.specificity * n + newScores.specificity) / (n + 1);
+      userStats.decomposition = (userStats.decomposition * n + newScores.decomposition) / (n + 1);
+      userStats.iteration = Math.min(20, userStats.iteration + 0.3);
+      userStats.verification = (userStats.verification * n + newScores.verification) / (n + 1);
+      userStats.count += 1;
+
+      document.getElementById("promptInput").value = "";
+      updateDashboard();
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initCharts();
+      updateDashboard();
+    });
+  </script>
+</body>
+</html>
